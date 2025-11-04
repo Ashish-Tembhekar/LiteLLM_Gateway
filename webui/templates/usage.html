@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usage Statistics - LiteLLM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 30px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .user-input {
+            margin-bottom: 30px;
+        }
+
+        .user-input input {
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            width: 300px;
+            margin-right: 10px;
+        }
+
+        .user-input button {
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .user-input button:hover {
+            background: #5568d3;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card h3 {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #c33;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .request-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .request-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .request-query {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .request-response {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .request-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← Back to Chat</a>
+        
+        <h1>📊 Usage Statistics</h1>
+        
+        <div class="user-input">
+            <input type="text" id="userIdInput" placeholder="Enter User ID" value="demo-user">
+            <button onclick="loadUserStats()">Load Stats</button>
+        </div>
+
+        <div id="content">
+            <div class="loading">Enter a User ID and click "Load Stats"</div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        async function loadUserStats() {
+            const userId = document.getElementById('userIdInput').value.trim();
+            if (!userId) {
+                alert('Please enter a User ID');
+                return;
+            }
+
+            const contentDiv = document.getElementById('content');
+            contentDiv.innerHTML = '<div class="loading">Loading statistics...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/proxy/user/${userId}/usage`);
+                const data = await response.json();
+
+                if (data.error) {
+                    contentDiv.innerHTML = `<div class="error">Error: ${data.error}</div>`;
+                    return;
+                }
+
+                renderStats(data);
+            } catch (error) {
+                contentDiv.innerHTML = `<div class="error">Failed to load statistics: ${error.message}</div>`;
+            }
+        }
+
+        function renderStats(data) {
+            const summary = data.summary;
+            const contentDiv = document.getElementById('content');
+
+            let html = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Requests</h3>
+                        <div class="value">${summary.total_requests}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Tokens</h3>
+                        <div class="value">${summary.total_tokens.toLocaleString()}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Cost</h3>
+                        <div class="value">$${summary.total_cost_usd.toFixed(4)}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Avg Response Time</h3>
+                        <div class="value">${summary.avg_response_time.toFixed(2)}s</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Apps Used</h3>
+                        <div class="value">${summary.apps_used}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Models Used</h3>
+                        <div class="value">${summary.models_used}</div>
+                    </div>
+                </div>
+            `;
+
+            // Usage by Application
+            if (data.usage_by_application && data.usage_by_application.length > 0) {
+                html += `
+                    <div class="section">
+                        <h2>Usage by Application</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Application</th>
+                                    <th>Requests</th>
+                                    <th>Tokens</th>
+                                    <th>Cost</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                data.usage_by_application.forEach(app => {
+                    html += `
+                        <tr>
+                            <td>${app.application_id}</td>
+                            <td>${app.request_count}</td>
+                            <td>${(app.tokens || 0).toLocaleString()}</td>
+                            <td>$${(app.cost || 0).toFixed(6)}</td>
+                        </tr>
+                    `;
+                });
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+
+            // Usage by Model
+            if (data.usage_by_model && data.usage_by_model.length > 0) {
+                html += `
+                    <div class="section">
+                        <h2>Usage by Model</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Model</th>
+                                    <th>Requests</th>
+                                    <th>Tokens</th>
+                                    <th>Cost</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                data.usage_by_model.forEach(model => {
+                    html += `
+                        <tr>
+                            <td>${model.model}</td>
+                            <td>${model.request_count}</td>
+                            <td>${(model.tokens || 0).toLocaleString()}</td>
+                            <td>$${(model.cost || 0).toFixed(6)}</td>
+                        </tr>
+                    `;
+                });
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+
+            // Recent Requests
+            if (data.recent_requests && data.recent_requests.length > 0) {
+                html += `
+                    <div class="section">
+                        <h2>Recent Requests (Last 50)</h2>
+                `;
+                data.recent_requests.forEach(req => {
+                    const timestamp = new Date(req.timestamp).toLocaleString();
+                    html += `
+                        <div class="request-item">
+                            <div class="request-header">
+                                <span>🕐 ${timestamp}</span>
+                                <span>📱 ${req.application_id}</span>
+                            </div>
+                            <div class="request-query"><strong>Q:</strong> ${escapeHtml(req.query)}</div>
+                            ${req.response ? `<div class="request-response"><strong>A:</strong> ${escapeHtml(req.response.substring(0, 200))}${req.response.length > 200 ? '...' : ''}</div>` : ''}
+                            <div class="request-meta">
+                                <span>🤖 ${req.model}</span>
+                                <span>⏱️ ${req.response_time}s</span>
+                                <span>📊 ${req.total_tokens} tokens</span>
+                                <span>💰 $${(req.cost_usd || 0).toFixed(6)}</span>
+                                <span>✅ ${req.status}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            } else {
+                html += '<div class="no-data">No requests found for this user.</div>';
+            }
+
+            contentDiv.innerHTML = html;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Load stats on page load if user ID is in URL
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('user_id');
+            if (userId) {
+                document.getElementById('userIdInput').value = userId;
+                loadUserStats();
+            }
+        });
+    </script>
+</body>
+</html>
+
