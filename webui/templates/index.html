@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LiteLLM Chat - WebUI</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
         * {
             margin: 0;
             padding: 0;
@@ -12,166 +14,325 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: url('https://unsplash.com/photos/cPa-7yByq3o/download?ixid=M3wxMjA3fDB8MXxhbGx8fHx8fHx8fHwxNzYyMjU1NTAzfA&force=true&w=2400') center center / cover no-repeat, linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(74, 86, 226, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            animation: gradientShift 15s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
         }
 
         .container {
             width: 100%;
-            max-width: 1400px;
-            height: 90vh;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1500px;
+            height: 92vh;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 
+                0 8px 32px 0 rgba(0, 0, 0, 0.37),
+                inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
             display: flex;
             overflow: hidden;
+            position: relative;
+            animation: containerFadeIn 0.6s ease-out;
+        }
+
+        @keyframes containerFadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .sidebar {
-            width: 300px;
-            background: #f8f9fa;
-            border-right: 1px solid #e0e0e0;
-            padding: 20px;
+            width: 320px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 32px 24px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
+            position: relative;
+        }
+
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
+            pointer-events: none;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
         }
 
         .sidebar h2 {
-            font-size: 20px;
-            margin-bottom: 20px;
-            color: #333;
+            font-family: 'Crimson Pro', serif;
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 32px;
+            color: rgba(255, 255, 255, 0.95);
+            letter-spacing: -0.5px;
         }
 
         .user-section {
-            margin-bottom: 20px;
-            padding: 15px;
-            background: white;
-            border-radius: 10px;
-            border: 2px solid #e0e0e0;
+            margin-bottom: 32px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .user-section:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
         }
 
         .user-section label {
             display: block;
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 5px;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 8px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            font-weight: 500;
         }
 
         .user-section input {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
+            padding: 12px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            font-size: 15px;
+            background: rgba(255, 255, 255, 0.02);
+            color: rgba(255, 255, 255, 0.9);
+            transition: all 0.3s ease;
+        }
+
+        .user-section input:focus {
+            outline: none;
+            border-color: rgba(120, 119, 198, 0.5);
+            background: rgba(255, 255, 255, 0.04);
         }
 
         .model-group {
-            margin-bottom: 25px;
+            margin-bottom: 28px;
+            animation: slideInLeft 0.5s ease-out backwards;
+        }
+
+        .model-group:nth-child(2) { animation-delay: 0.1s; }
+        .model-group:nth-child(3) { animation-delay: 0.2s; }
+        .model-group:nth-child(4) { animation-delay: 0.3s; }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
         }
 
         .model-group h3 {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 10px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 12px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1.2px;
+            font-weight: 600;
         }
 
         .model-option {
-            padding: 12px 15px;
+            padding: 14px 18px;
             margin-bottom: 8px;
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .model-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+            transition: left 0.5s;
+        }
+
+        .model-option:hover::before {
+            left: 100%;
         }
 
         .model-option:hover {
-            border-color: #667eea;
-            background: #f0f4ff;
+            border-color: rgba(120, 119, 198, 0.4);
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(4px);
         }
 
         .model-option.active {
-            border-color: #667eea;
-            background: #667eea;
-            color: white;
-            font-weight: 600;
+            border-color: rgba(120, 119, 198, 0.6);
+            background: rgba(120, 119, 198, 0.15);
+            color: rgba(255, 255, 255, 0.95);
+            font-weight: 500;
+            box-shadow: 0 4px 16px rgba(120, 119, 198, 0.2);
         }
 
         .usage-link {
             margin-top: auto;
-            padding: 12px;
-            background: #667eea;
-            color: white;
+            padding: 16px;
+            background: rgba(120, 119, 198, 0.2);
+            color: rgba(255, 255, 255, 0.95);
             text-align: center;
-            border-radius: 8px;
+            border-radius: 12px;
             text-decoration: none;
-            font-weight: 600;
-            transition: background 0.2s;
+            font-weight: 500;
+            border: 1px solid rgba(120, 119, 198, 0.3);
+            transition: all 0.3s ease;
+            font-size: 14px;
         }
 
         .usage-link:hover {
-            background: #5568d3;
+            background: rgba(120, 119, 198, 0.3);
+            border-color: rgba(120, 119, 198, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(120, 119, 198, 0.3);
         }
 
         .chat-area {
             flex: 1;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
         .chat-header {
-            padding: 20px 30px;
-            border-bottom: 1px solid #e0e0e0;
-            background: white;
+            padding: 32px 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.01);
+            backdrop-filter: blur(10px);
         }
 
         .chat-header h1 {
-            font-size: 24px;
-            color: #333;
+            font-family: 'Crimson Pro', serif;
+            font-size: 36px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.95);
+            letter-spacing: -1px;
+            margin-bottom: 8px;
         }
 
         .selected-model {
-            font-size: 14px;
-            color: #667eea;
-            margin-top: 5px;
+            font-size: 15px;
+            color: rgba(120, 119, 198, 0.9);
+            margin-top: 8px;
+            font-weight: 500;
         }
 
         .api-status {
-            font-size: 12px;
-            color: #999;
-            margin-top: 5px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .api-status::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
         }
 
         .api-status.connected {
-            color: #28a745;
+            color: rgba(52, 211, 153, 0.9);
+        }
+
+        .api-status.connected::before {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
         .api-status.disconnected {
-            color: #dc3545;
+            color: rgba(248, 113, 113, 0.9);
         }
 
         .messages {
             flex: 1;
             overflow-y: auto;
-            padding: 30px;
-            background: #fafafa;
+            padding: 40px;
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .messages::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .messages::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
         }
 
         .message {
-            margin-bottom: 20px;
+            margin-bottom: 32px;
             display: flex;
             flex-direction: column;
+            animation: messageFadeIn 0.4s ease-out;
+        }
+
+        @keyframes messageFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .message.user {
@@ -179,88 +340,138 @@
         }
 
         .message-content {
-            max-width: 70%;
-            padding: 15px 20px;
-            border-radius: 15px;
-            line-height: 1.6;
-            white-space: pre-wrap;
+            max-width: 75%;
+            padding: 20px 26px;
+            border-radius: 20px;
+            line-height: 1.7;
+            font-family: 'Crimson Pro', serif;
+            font-size: 17px;
+            position: relative;
         }
 
         .message.user .message-content {
-            background: #667eea;
-            color: white;
-            border-bottom-right-radius: 5px;
+            background: rgba(120, 119, 198, 0.2);
+            color: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(120, 119, 198, 0.3);
+            border-bottom-right-radius: 6px;
+            box-shadow: 0 4px 16px rgba(120, 119, 198, 0.15);
         }
 
         .message.assistant .message-content {
-            background: white;
-            color: #333;
-            border: 1px solid #e0e0e0;
-            border-bottom-left-radius: 5px;
+            background: rgba(255, 255, 255, 0.03);
+            color: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom-left-radius: 6px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .message-content .word {
+            display: inline-block;
+            opacity: 0;
+            animation: wordFadeIn 0.3s ease-out forwards;
+            margin-right: 0.25em;
+        }
+
+        @keyframes wordFadeIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(8px);
+                filter: blur(4px);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0);
+                filter: blur(0);
+            }
         }
 
         .message-meta {
             font-size: 12px;
-            color: #999;
-            margin-top: 5px;
+            color: rgba(255, 255, 255, 0.35);
+            margin-top: 8px;
             display: flex;
-            gap: 15px;
+            gap: 16px;
             flex-wrap: wrap;
+            font-family: 'Inter', sans-serif;
         }
 
         .input-area {
-            padding: 20px 30px;
-            background: white;
-            border-top: 1px solid #e0e0e0;
+            padding: 24px 40px 32px;
+            background: rgba(255, 255, 255, 0.01);
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(10px);
         }
 
         .input-container {
             display: flex;
-            gap: 10px;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 6px;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .input-container:focus-within {
+            border-color: rgba(120, 119, 198, 0.5);
+            background: rgba(255, 255, 255, 0.04);
+            box-shadow: 0 8px 32px rgba(120, 119, 198, 0.2);
         }
 
         #messageInput {
             flex: 1;
-            padding: 15px 20px;
-            border: 2px solid #e0e0e0;
-            border-radius: 25px;
+            padding: 16px 24px;
+            border: none;
+            background: transparent;
             font-size: 15px;
             outline: none;
-            transition: border-color 0.2s;
+            color: rgba(255, 255, 255, 0.9);
+            font-family: 'Inter', sans-serif;
         }
 
-        #messageInput:focus {
-            border-color: #667eea;
+        #messageInput::placeholder {
+            color: rgba(255, 255, 255, 0.3);
         }
 
         #sendButton {
-            padding: 15px 35px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 25px;
+            padding: 16px 32px;
+            background: rgba(120, 119, 198, 0.25);
+            color: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(120, 119, 198, 0.3);
+            border-radius: 18px;
             font-size: 15px;
-            font-weight: 600;
+            font-weight: 500;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Inter', sans-serif;
         }
 
-        #sendButton:hover {
-            background: #5568d3;
+        #sendButton:hover:not(:disabled) {
+            background: rgba(120, 119, 198, 0.35);
+            border-color: rgba(120, 119, 198, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(120, 119, 198, 0.3);
+        }
+
+        #sendButton:active:not(:disabled) {
+            transform: translateY(0);
         }
 
         #sendButton:disabled {
-            background: #ccc;
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.08);
             cursor: not-allowed;
+            opacity: 0.5;
         }
 
         .typing-indicator {
             display: none;
-            padding: 15px 20px;
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 15px;
-            max-width: 70px;
+            padding: 20px 26px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            border-bottom-left-radius: 6px;
+            max-width: fit-content;
         }
 
         .typing-indicator.active {
@@ -270,11 +481,11 @@
         .typing-indicator span {
             height: 8px;
             width: 8px;
-            background: #667eea;
+            background: rgba(120, 119, 198, 0.8);
             border-radius: 50%;
             display: inline-block;
-            margin-right: 5px;
-            animation: typing 1.4s infinite;
+            margin-right: 6px;
+            animation: typing 1.4s ease-in-out infinite;
         }
 
         .typing-indicator span:nth-child(2) {
@@ -283,24 +494,36 @@
 
         .typing-indicator span:nth-child(3) {
             animation-delay: 0.4s;
+            margin-right: 0;
         }
 
         @keyframes typing {
             0%, 60%, 100% {
                 transform: translateY(0);
+                opacity: 0.7;
             }
             30% {
-                transform: translateY(-10px);
+                transform: translateY(-12px);
+                opacity: 1;
             }
         }
 
         .error-message {
-            background: #fee;
-            color: #c33;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border-left: 4px solid #c33;
+            background: rgba(248, 113, 113, 0.15);
+            color: rgba(248, 113, 113, 0.9);
+            padding: 18px 22px;
+            border-radius: 14px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(248, 113, 113, 0.3);
+            border-left: 3px solid rgba(248, 113, 113, 0.6);
+            font-size: 14px;
+            animation: errorShake 0.5s ease-out;
+        }
+
+        @keyframes errorShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
         }
     </style>
 </head>
@@ -314,10 +537,10 @@
                 <input type="text" id="userId" placeholder="Enter your user ID" value="demo-user">
             </div>
 
-            <h2>Select Model</h2>
+            <h2 style="font-size: 16px; margin-bottom: 20px;">Select Model</h2>
             <div id="modelsList"></div>
             
-            <a href="/usage" class="usage-link" target="_blank">📊 View Usage Stats</a>
+            <a href="/usage" class="usage-link" target="_blank">View Usage Stats</a>
         </div>
 
         <div class="chat-area">
@@ -330,7 +553,7 @@
             <div class="messages" id="messages">
                 <div class="message assistant">
                     <div class="message-content">
-                        👋 Welcome to LiteLLM Chat! Select a model from the sidebar and start chatting.
+                        Welcome to LiteLLM Chat! Select a model from the sidebar and start chatting.
                     </div>
                 </div>
             </div>
@@ -348,24 +571,22 @@
         let selectedModel = null;
         const API_BASE = window.location.origin;
 
-        // Check API connection on load
         async function checkApiConnection() {
             try {
                 const response = await fetch(`${API_BASE}/api/proxy/models`);
                 if (response.ok) {
-                    document.getElementById('apiStatus').textContent = '✅ Connected to LiteLLM API Service';
+                    document.getElementById('apiStatus').textContent = 'Connected to LiteLLM API Service';
                     document.getElementById('apiStatus').className = 'api-status connected';
                     loadModels();
                 } else {
                     throw new Error('API not responding');
                 }
             } catch (error) {
-                document.getElementById('apiStatus').textContent = '❌ Cannot connect to API Service';
+                document.getElementById('apiStatus').textContent = 'Cannot connect to API Service';
                 document.getElementById('apiStatus').className = 'api-status disconnected';
             }
         }
 
-        // Load available models
         async function loadModels() {
             try {
                 const response = await fetch(`${API_BASE}/api/proxy/models`);
@@ -400,12 +621,11 @@
             document.querySelectorAll('.model-option').forEach(opt => opt.classList.remove('active'));
             element.classList.add('active');
             selectedModel = modelId;
-            document.getElementById('selectedModel').textContent = `${provider} - ${modelName}`;
+            document.getElementById('selectedModel').textContent = `${provider} — ${modelName}`;
             document.getElementById('messageInput').disabled = false;
             document.getElementById('sendButton').disabled = false;
         }
 
-        // Send message on Enter key
         document.addEventListener('DOMContentLoaded', () => {
             checkApiConnection();
             
@@ -424,14 +644,12 @@
             
             if (!message || !selectedModel) return;
             
-            // Add user message to UI
             addMessage('user', message);
             
             input.value = '';
             input.disabled = true;
             document.getElementById('sendButton').disabled = true;
             
-            // Show typing indicator
             const typingIndicator = document.createElement('div');
             typingIndicator.className = 'message assistant';
             typingIndicator.innerHTML = '<div class="typing-indicator active"><span></span><span></span><span></span></div>';
@@ -453,14 +671,13 @@
                 
                 const data = await response.json();
                 
-                // Remove typing indicator
                 typingIndicator.remove();
                 
                 if (data.error) {
                     addErrorMessage(data.error);
                 } else {
                     const meta = data.metadata;
-                    addMessage('assistant', data.response, {
+                    addMessageWithAnimation('assistant', data.response, {
                         responseTime: meta.response_time,
                         tokens: meta.tokens,
                         cost: meta.cost_usd,
@@ -501,11 +718,46 @@
             scrollToBottom();
         }
 
+        function addMessageWithAnimation(role, content, meta = null) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            
+            const words = content.split(' ');
+            words.forEach((word, index) => {
+                const wordSpan = document.createElement('span');
+                wordSpan.className = 'word';
+                wordSpan.textContent = word;
+                wordSpan.style.animationDelay = `${index * 0.05}s`;
+                contentDiv.appendChild(wordSpan);
+            });
+            
+            messageDiv.appendChild(contentDiv);
+            
+            if (meta) {
+                const metaDiv = document.createElement('div');
+                metaDiv.className = 'message-meta';
+                metaDiv.innerHTML = `
+                    <span>⏱️ ${meta.responseTime}s</span>
+                    <span>📊 ${meta.tokens.total} tokens (${meta.tokens.prompt}↑ + ${meta.tokens.completion}↓)</span>
+                    <span>💰 $${meta.cost.toFixed(6)}</span>
+                    <span>🆔 ${meta.requestId.substring(0, 8)}...</span>
+                `;
+                messageDiv.appendChild(metaDiv);
+            }
+            
+            messagesDiv.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
         function addErrorMessage(error) {
             const messagesDiv = document.getElementById('messages');
             const errorDiv = document.createElement('div');
             errorDiv.className = 'error-message';
-            errorDiv.textContent = '❌ Error: ' + error;
+            errorDiv.textContent = '⚠️ Error: ' + error;
             messagesDiv.appendChild(errorDiv);
             scrollToBottom();
         }
@@ -523,4 +775,3 @@
     </script>
 </body>
 </html>
-
